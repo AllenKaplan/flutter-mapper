@@ -1,16 +1,13 @@
-# mapper
+# Flutter Mappaer
 
-Map select
+This app is able to:
 
-## Getting Started
+- Request user location on button click
+- Handle location denied
+- Show user location by city & region
+- Marker icon to show current centre of map
+-
 
-This project is a starting point for a Flutter application.
+https://user-images.githubusercontent.com/25397434/201487921-1d409ea8-40fe-498b-8837-579dd70361d1.mp4
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+<img width="293" alt="Screenshot 2022-11-12 at 12 53 00 PM" src="https://user-images.githubusercontent.com/25397434/201487880-84b3d88f-a181-413d-a08f-76ceece4f061.png">
