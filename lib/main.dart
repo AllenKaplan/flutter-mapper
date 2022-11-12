@@ -47,10 +47,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String loc = "Move the map to select a location";
   final ctrl = MapController();
-  final _timer = Limiter(milliseconds: 5);
-
-  // LocationData _currentLocationData;
-  // Position _currentPosition;
+  final _timer = Limiter(milliseconds: 1000);
 
   void changeLocation(MapPosition p) {
     _timer.run(() {
@@ -62,69 +59,15 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Widget _buildPopupDialog(BuildContext context, String title, String message) {
-    return AlertDialog(
-      title: Text(title),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(message),
-        ],
-      ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text('Close'),
-        ),
-      ],
-    );
-  }
-
-  Future<bool> _handleLocationPermission() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) => _buildPopupDialog(context, 'Alert',
-            'Location services are disabled. Please enable the services'),
-      );
-      return false;
-    }
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) => _buildPopupDialog(
-              context, 'Alert', 'Location services are denied'),
-        );
-        return false;
-      }
-    }
-    if (permission == LocationPermission.deniedForever) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) => _buildPopupDialog(context, 'Alert',
-            'Location permissions are permanently denied, we cannot request permissions.'),
-      );
-      return false;
-    }
-    return true;
-  }
-
   void goToCurrentLocation() {
     _handleLocationPermission().then((hasPermission) {
       if (!hasPermission) return;
 
-      Geolocator.getCurrentPosition().then(
-          (value) => ctrl.move(LatLng(value.latitude, value.longitude), 5));
+      Geolocator.getCurrentPosition().then((value) {
+        ctrl.move(LatLng(value.latitude, value.longitude), 5);
+        changeLocation(
+            MapPosition(center: LatLng(value.latitude, value.longitude)));
+      });
     }).catchError((e) {
       debugPrint(e);
     });
@@ -148,7 +91,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ? '$subLocality \($locality\)'
         : locality;
     return "$l, $administrativeArea";
-    // return "$name, $thoroughfare \($subThoroughfare\), $locality, $administrativeArea, $postalCode, $country";
   }
 
   @override
@@ -210,6 +152,63 @@ class _MyHomePageState extends State<MyHomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+
+  Widget _buildPopupDialog(BuildContext context, String title, String message) {
+    return AlertDialog(
+      title: Text(title),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(message),
+        ],
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Close'),
+        ),
+      ],
+    );
+  }
+
+  Future<bool> _handleLocationPermission() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => _buildPopupDialog(context, 'Alert',
+            'Location services are disabled. Please enable the services'),
+      );
+      return false;
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) => _buildPopupDialog(
+              context, 'Alert', 'Location services are denied'),
+        );
+        return false;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => _buildPopupDialog(context, 'Alert',
+            'Location permissions are permanently denied, we cannot request permissions.'),
+      );
+      return false;
+    }
+    return true;
+  }
 }
 
 class Limiter {
@@ -221,7 +220,8 @@ class Limiter {
 
   run(VoidCallback action) {
     if (_timer != null && !_timer!.isActive) {
-      _timer = Timer(Duration(milliseconds: milliseconds), action);
+      action();
+      _timer = Timer(Duration(milliseconds: milliseconds), () => {});
     } else {}
   }
 }
